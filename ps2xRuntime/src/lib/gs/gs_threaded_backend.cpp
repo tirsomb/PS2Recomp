@@ -1,6 +1,9 @@
 #include "runtime/gs/gs_threaded_backend.h"
 #include "runtime/gs/gs_cpu_backend.h"
 #include "runtime/gs/gs_gpu_backend.h"
+#if defined(__APPLE__)
+#include "runtime/gs/gs_metal_backend.h"
+#endif
 #include "runtime/gs/gs_shared_present.h"
 #include "runtime/ps2_simd.h"
 #include "ThreadPriority.h"
@@ -83,6 +86,12 @@ std::unique_ptr<GSRasterBackend> GSThreadedBackend::MakeDefault()
     const bool enabled = (value && *value) ? *value != '0' : s_enabledByDefault.load();
     const char *gpu = std::getenv("PS2X_GS_GPU");
     const bool useGpu = (gpu && *gpu) ? *gpu != '0' : s_gpuByDefault.load();
+#if defined(__APPLE__)
+    const char *metal = std::getenv("PS2X_GS_METAL");
+    const bool useMetal = !metal || *metal != '0';
+    if (useMetal && GSMetalBackend::IsSupported())
+        return std::make_unique<GSThreadedBackend>(std::make_unique<GSMetalBackend>());
+#endif
     if (useGpu)
         return std::make_unique<GSThreadedBackend>(std::make_unique<GSGpuBackend>());
     if (!enabled)

@@ -407,6 +407,11 @@ add_library(ps2_runtime STATIC
     src/lib/games_database.cpp
 )
 
+if(APPLE)
+    target_sources(ps2_runtime PRIVATE src/lib/gs/metal/gs_metal_backend.mm)
+    target_link_libraries(ps2_runtime PUBLIC "-framework Metal" "-framework QuartzCore")
+endif()
+
 if(PS2X_ENABLE_RUNTIME_LOGS)
     target_compile_definitions(ps2_runtime PUBLIC
         PS2_RUNTIME_LOGS=1
