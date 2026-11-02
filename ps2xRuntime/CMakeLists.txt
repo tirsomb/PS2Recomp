@@ -517,6 +517,13 @@ target_include_directories(ps2_runtime PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel
 )
 
+# Runtime headers expose SSE intrinsics to consumers such as generated game and
+# VU code. Propagate the ARM compatibility layer beyond this subdirectory.
+if(PS2X_IS_ARM_TARGET)
+    target_include_directories(ps2_runtime PUBLIC ${sse2neon_SOURCE_DIR})
+    target_compile_definitions(ps2_runtime PUBLIC USE_SSE2NEON)
+endif()
+
 target_link_libraries(ps2_runtime PUBLIC ps2_host_backend ffmpeg ps2_iop)
 target_link_libraries(ps2EntryRunner
     PRIVATE

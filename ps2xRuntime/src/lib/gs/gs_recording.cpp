@@ -1,11 +1,11 @@
 #include "runtime/gs/gs_recording.h"
 #include "runtime/ps2_memory.h"
+#include "runtime/ps2_simd.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
-#include <xmmintrin.h>
 
 namespace
 {

@@ -1,5 +1,6 @@
 #include "runtime/ps2_async_vif.h"
 #include "runtime/ps2_memory.h"
+#include "runtime/ps2_simd.h"
 #include "runtime/ee_scheduler.h"
 #include "runtime/gs/ps2_gif_arbiter.h"
 #include "ThreadPriority.h"
@@ -14,7 +15,6 @@
 #include <mutex>
 #include <thread>
 #include <algorithm>
-#include <xmmintrin.h>
 
 namespace ps2x::asyncvif
 {

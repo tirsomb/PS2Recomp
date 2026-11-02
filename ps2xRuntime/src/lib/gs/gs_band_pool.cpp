@@ -1,10 +1,10 @@
 #include "runtime/gs/gs_band_pool.h"
+#include "runtime/ps2_simd.h"
 #include "ThreadNaming.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <string>
-#include <xmmintrin.h>
 
 GSBandPool::GSBandPool(unsigned workers)
 {

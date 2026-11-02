@@ -2,6 +2,7 @@
 #include "runtime/gs/gs_cpu_backend.h"
 #include "runtime/gs/gs_gpu_backend.h"
 #include "runtime/gs/gs_shared_present.h"
+#include "runtime/ps2_simd.h"
 #include "ThreadPriority.h"
 #include "ThreadNaming.h"
 
@@ -9,7 +10,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <xmmintrin.h>
 
 namespace
 {

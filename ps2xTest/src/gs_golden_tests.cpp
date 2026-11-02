@@ -9,7 +9,7 @@
 #include <cmath>
 #include <cstring>
 #include <filesystem>
-#include <xmmintrin.h>
+#include "runtime/ps2_simd.h"
 #include <memory>
 #include <random>
 #include <string>

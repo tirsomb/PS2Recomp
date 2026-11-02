@@ -17,7 +17,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <xmmintrin.h>
+#include "runtime/ps2_simd.h"
 
 namespace GSRaster
 {

@@ -5,7 +5,7 @@
 
 #include <array>
 #include <cstdint>
-#include <smmintrin.h>
+#include "runtime/ps2_simd.h"
 
 namespace GSRaster
 {
