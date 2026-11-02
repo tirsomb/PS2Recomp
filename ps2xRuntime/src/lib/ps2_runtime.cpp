@@ -35,6 +35,9 @@
 #include <unordered_map>
 #include <sstream>
 #include <rlgl.h>
+#if defined(__APPLE__)
+#include <pthread.h>
+#endif
 
 namespace ps2_stubs
 {
@@ -2579,8 +2582,8 @@ void PS2Runtime::run()
     ps2_host_input::setFieldCounter(&m_memory.gs().vsyncTick);
     ps2_host_input::sample();
 
-    std::thread gameThread([&]()
-                           {
+    auto gameThreadBody = [&]()
+    {
         ThreadNaming::SetCurrentThreadName("GameThread");
         ThreadPriority::RaiseCurrentThread(ThreadPriority::Level::Highest);
         try
@@ -2599,7 +2602,36 @@ void PS2Runtime::run()
         {
             std::cerr << "Error during program execution: unknown exception" << std::endl;
         }
-        gameThreadFinished.store(true, std::memory_order_release); });
+        gameThreadFinished.store(true, std::memory_order_release);
+    };
+
+#if defined(__APPLE__)
+    // Recompiled guest functions call each other as native host functions and
+    // need substantially more than macOS's default secondary-thread stack.
+    constexpr size_t kGameThreadStackSize = 16u * 1024u * 1024u;
+    pthread_attr_t gameThreadAttributes;
+    pthread_attr_init(&gameThreadAttributes);
+    pthread_attr_setstacksize(&gameThreadAttributes, kGameThreadStackSize);
+    auto *gameThreadFunction = new std::function<void()>(gameThreadBody);
+    pthread_t gameThread{};
+    const int gameThreadResult = pthread_create(
+        &gameThread, &gameThreadAttributes,
+        [](void *opaque) -> void *
+        {
+            std::unique_ptr<std::function<void()>> function(static_cast<std::function<void()> *>(opaque));
+            (*function)();
+            return nullptr;
+        },
+        gameThreadFunction);
+    pthread_attr_destroy(&gameThreadAttributes);
+    if (gameThreadResult != 0)
+    {
+        delete gameThreadFunction;
+        throw std::runtime_error("failed to create game thread: " + std::to_string(gameThreadResult));
+    }
+#else
+    std::thread gameThread(gameThreadBody);
+#endif
 
     ThreadPriority::RaiseCurrentThread(ThreadPriority::Level::AboveNormal);
     bool restoreMaximized = false;
@@ -2821,10 +2853,12 @@ void PS2Runtime::run()
     }
 
     requestStop();
+#if defined(__APPLE__)
+    pthread_join(gameThread, nullptr);
+#else
     if (gameThread.joinable())
-    {
         gameThread.join();
-    }
+#endif
 
     if (m_debugUiInitialized && m_debugUiShutdownCallback)
     {
